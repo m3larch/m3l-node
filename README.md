@@ -183,13 +183,29 @@ src/modules/companies/
 ### Exemplo completo do módulo
 
 <details>
-<summary><strong>CompanyStatus.ts</strong></summary>
+<summary><strong>CompanySaveController.ts</strong></summary>
 
 ```ts
-export enum CompanyStatus {
-  PENDING = 'pending',
-  APPROVED = 'approved',
-  REJECTED = 'rejected',
+import type { Request, Response, NextFunction } from 'express';
+import { CompanySaveService } from '../../domain/services/CompanySaveService';
+import { CompanySaveRequest } from '../requests/CompanySaveRequest';
+import { CompanyResponse } from '../responses/CompanyResponse';
+
+export class CompanySaveController {
+  constructor(
+    private readonly service: CompanySaveService,
+  ) {}
+
+  async handle(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const input = CompanySaveRequest.parse(req.body);
+      const company = await this.service.handle(input);
+
+      res.status(201).json(CompanyResponse.from(company));
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 ```
 
@@ -281,6 +297,19 @@ export interface CompanyRepository {
 </details>
 
 <details>
+<summary><strong>CompanyStatus.ts</strong></summary>
+
+```ts
+export enum CompanyStatus {
+  PENDING = 'pending',
+  APPROVED = 'approved',
+  REJECTED = 'rejected',
+}
+```
+
+</details>
+
+<details>
 <summary><strong>InMemoryCompanyRepository.ts</strong></summary>
 
 ```ts
@@ -348,35 +377,6 @@ export class CompanySaveService {
       type: data.type,
       status: CompanyStatus.PENDING,
     });
-  }
-}
-```
-
-</details>
-
-<details>
-<summary><strong>CompanySaveController.ts</strong></summary>
-
-```ts
-import type { Request, Response, NextFunction } from 'express';
-import { CompanySaveService } from '../../domain/services/CompanySaveService';
-import { CompanySaveRequest } from '../requests/CompanySaveRequest';
-import { CompanyResponse } from '../responses/CompanyResponse';
-
-export class CompanySaveController {
-  constructor(
-    private readonly service: CompanySaveService,
-  ) {}
-
-  async handle(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const input = CompanySaveRequest.parse(req.body);
-      const company = await this.service.handle(input);
-
-      res.status(201).json(CompanyResponse.from(company));
-    } catch (error) {
-      next(error);
-    }
   }
 }
 ```
