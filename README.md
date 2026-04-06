@@ -276,58 +276,29 @@ export class CompanyResponse {
 </details>
 
 <details>
-<summary><strong>CompanyRepository.ts</strong></summary>
+<summary><strong>CompanySaveService.ts</strong></summary>
 
 ```ts
-import { CompanyStatus } from '../../domain/enums/CompanyStatus';
+import { CompanyValidationBusiness } from '../business/CompanyValidationBusiness';
+import { CompanyStatus } from '../enums/CompanyStatus';
+import { CompanyRepository } from '../../infrastructure/repositories/CompanyRepository';
+import { CompanySaveInput } from '../../http/requests/CompanySaveRequest';
 
-export type CompanyRecord = {
-  id: string;
-  name: string;
-  document: string;
-  type: string;
-  status: CompanyStatus;
-};
+export class CompanySaveService {
+  constructor(
+    private readonly validationBusiness: CompanyValidationBusiness,
+    private readonly companyRepository: CompanyRepository,
+  ) {}
 
-export interface CompanyRepository {
-  save(data: Omit<CompanyRecord, 'id'>): Promise<CompanyRecord>;
-}
-```
+  async handle(data: CompanySaveInput) {
+    this.validationBusiness.validateForSave(data.document, data.type);
 
-</details>
-
-<details>
-<summary><strong>CompanyStatus.ts</strong></summary>
-
-```ts
-export enum CompanyStatus {
-  PENDING = 'pending',
-  APPROVED = 'approved',
-  REJECTED = 'rejected',
-}
-```
-
-</details>
-
-<details>
-<summary><strong>InMemoryCompanyRepository.ts</strong></summary>
-
-```ts
-import { randomUUID } from 'node:crypto';
-import { CompanyRecord, CompanyRepository } from './CompanyRepository';
-
-export class InMemoryCompanyRepository implements CompanyRepository {
-  private readonly items: CompanyRecord[] = [];
-
-  async save(data: Omit<CompanyRecord, 'id'>): Promise<CompanyRecord> {
-    const company: CompanyRecord = {
-      id: randomUUID(),
-      ...data,
-    };
-
-    this.items.push(company);
-
-    return company;
+    return this.companyRepository.save({
+      name: data.name,
+      document: data.document,
+      type: data.type,
+      status: CompanyStatus.PENDING,
+    });
   }
 }
 ```
@@ -354,29 +325,45 @@ export class CompanyValidationBusiness {
 </details>
 
 <details>
-<summary><strong>CompanySaveService.ts</strong></summary>
+<summary><strong>CompanyRepository.ts</strong></summary>
 
 ```ts
-import { CompanyValidationBusiness } from '../business/CompanyValidationBusiness';
-import { CompanyStatus } from '../enums/CompanyStatus';
-import { CompanyRepository } from '../../infrastructure/repositories/CompanyRepository';
-import { CompanySaveInput } from '../../http/requests/CompanySaveRequest';
+import { CompanyStatus } from '../../domain/enums/CompanyStatus';
 
-export class CompanySaveService {
-  constructor(
-    private readonly validationBusiness: CompanyValidationBusiness,
-    private readonly companyRepository: CompanyRepository,
-  ) {}
+export type CompanyRecord = {
+  id: string;
+  name: string;
+  document: string;
+  type: string;
+  status: CompanyStatus;
+};
 
-  async handle(data: CompanySaveInput) {
-    this.validationBusiness.validateForSave(data.document, data.type);
+export interface CompanyRepository {
+  save(data: Omit<CompanyRecord, 'id'>): Promise<CompanyRecord>;
+}
+```
 
-    return this.companyRepository.save({
-      name: data.name,
-      document: data.document,
-      type: data.type,
-      status: CompanyStatus.PENDING,
-    });
+</details>
+
+<details>
+<summary><strong>InMemoryCompanyRepository.ts</strong></summary>
+
+```ts
+import { randomUUID } from 'node:crypto';
+import { CompanyRecord, CompanyRepository } from './CompanyRepository';
+
+export class InMemoryCompanyRepository implements CompanyRepository {
+  private readonly items: CompanyRecord[] = [];
+
+  async save(data: Omit<CompanyRecord, 'id'>): Promise<CompanyRecord> {
+    const company: CompanyRecord = {
+      id: randomUUID(),
+      ...data,
+    };
+
+    this.items.push(company);
+
+    return company;
   }
 }
 ```
@@ -435,6 +422,19 @@ export class CompanyListQuery {
       params,
     );
   }
+}
+```
+
+</details>
+
+<details>
+<summary><strong>CompanyStatus.ts</strong></summary>
+
+```ts
+export enum CompanyStatus {
+  PENDING = 'pending',
+  APPROVED = 'approved',
+  REJECTED = 'rejected',
 }
 ```
 
