@@ -194,9 +194,9 @@ src/modules/companies/
 <details>
 <summary><strong>CompanySaveController.ts</strong></summary>
 
-**Directory:** `src/modules/companies/http/controllers/CompanySaveController.ts`
-
 ```ts
+// src/modules/companies/http/controllers/CompanySaveController.ts
+
 import type { Request, Response, NextFunction } from 'express';
 import { CompanySaveService } from '../../domain/services/CompanySaveService';
 import { CompanySaveRequest } from '../requests/CompanySaveRequest';
@@ -225,9 +225,9 @@ export class CompanySaveController {
 <details>
 <summary><strong>CompanySaveRequest.ts</strong></summary>
 
-**Directory:** `src/modules/companies/http/requests/CompanySaveRequest.ts`
-
 ```ts
+// src/modules/companies/http/requests/CompanySaveRequest.ts
+
 export type CompanySaveInput = {
   name: string;
   document: string;
@@ -264,9 +264,9 @@ export class CompanySaveRequest {
 <details>
 <summary><strong>CompanyResponse.ts</strong></summary>
 
-**Directory:** `src/modules/companies/http/responses/CompanyResponse.ts`
-
 ```ts
+// src/modules/companies/http/responses/CompanyResponse.ts
+
 type CompanyDto = {
   id: string;
   name: string;
@@ -293,9 +293,9 @@ export class CompanyResponse {
 <details>
 <summary><strong>CompanyStatus.ts</strong></summary>
 
-**Directory:** `src/modules/companies/domain/enums/CompanyStatus.ts`
-
 ```ts
+// src/modules/companies/domain/enums/CompanyStatus.ts
+
 export enum CompanyStatus {
   PENDING = 'pending',
   APPROVED = 'approved',
@@ -308,9 +308,9 @@ export enum CompanyStatus {
 <details>
 <summary><strong>CompanySaveService.ts</strong></summary>
 
-**Directory:** `src/modules/companies/domain/services/CompanySaveService.ts`
-
 ```ts
+// src/modules/companies/domain/services/CompanySaveService.ts
+
 import { CompanyValidationBusiness } from '../business/CompanyValidationBusiness';
 import { CompanyStatus } from '../enums/CompanyStatus';
 import { CompanyRepository } from '../../infrastructure/repositories/CompanyRepository';
@@ -340,9 +340,9 @@ export class CompanySaveService {
 <details>
 <summary><strong>CompanyValidationBusiness.ts</strong></summary>
 
-**Directory:** `src/modules/companies/domain/business/CompanyValidationBusiness.ts`
-
 ```ts
+// src/modules/companies/domain/business/CompanyValidationBusiness.ts
+
 export class CompanyValidationBusiness {
   validateForSave(document: string, type: string): void {
     if (document.trim() === '') {
@@ -361,9 +361,9 @@ export class CompanyValidationBusiness {
 <details>
 <summary><strong>CompanyRepository.ts</strong></summary>
 
-**Directory:** `src/modules/companies/infrastructure/repositories/CompanyRepository.ts`
-
 ```ts
+// src/modules/companies/infrastructure/repositories/CompanyRepository.ts
+
 import { CompanyStatus } from '../../domain/enums/CompanyStatus';
 
 export type CompanyRecord = {
@@ -384,9 +384,9 @@ export interface CompanyRepository {
 <details>
 <summary><strong>InMemoryCompanyRepository.ts</strong></summary>
 
-**Directory:** `src/modules/companies/infrastructure/repositories/InMemoryCompanyRepository.ts`
-
 ```ts
+// src/modules/companies/infrastructure/repositories/InMemoryCompanyRepository.ts
+
 import { randomUUID } from 'node:crypto';
 import { CompanyRecord, CompanyRepository } from './CompanyRepository';
 
@@ -411,9 +411,9 @@ export class InMemoryCompanyRepository implements CompanyRepository {
 <details>
 <summary><strong>CompanyListQuery.ts</strong></summary>
 
-**Directory:** `src/modules/companies/infrastructure/queries/CompanyListQuery.ts`
-
 ```ts
+// src/modules/companies/infrastructure/queries/CompanyListQuery.ts
+
 export type CompanyListFilters = {
   status?: string;
   name?: string;
@@ -480,6 +480,8 @@ The module remains the owner of its canonical persistence; cross-module reading 
 Example:
 
 ```ts
+// src/modules/companies/infrastructure/queries/DocumentWithCompanyListQuery.ts
+
 export class DocumentWithCompanyListQuery {
   constructor(
     private readonly db: {
