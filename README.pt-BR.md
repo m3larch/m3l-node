@@ -192,13 +192,31 @@ src/modules/companies/
 ### Exemplo completo do módulo
 
 <details>
-<summary><strong>CompanyStatus.ts</strong></summary>
+<summary><strong>CompanySaveController.ts</strong></summary>
+
+**Directory:** `src/modules/companies/http/controllers/CompanySaveController.ts`
 
 ```ts
-export enum CompanyStatus {
-  PENDING = 'pending',
-  APPROVED = 'approved',
-  REJECTED = 'rejected',
+import type { Request, Response, NextFunction } from 'express';
+import { CompanySaveService } from '../../domain/services/CompanySaveService';
+import { CompanySaveRequest } from '../requests/CompanySaveRequest';
+import { CompanyResponse } from '../responses/CompanyResponse';
+
+export class CompanySaveController {
+  constructor(
+    private readonly service: CompanySaveService,
+  ) {}
+
+  async handle(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const input = CompanySaveRequest.parse(req.body);
+      const company = await this.service.handle(input);
+
+      res.status(201).json(CompanyResponse.from(company));
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 ```
 
@@ -206,6 +224,8 @@ export enum CompanyStatus {
 
 <details>
 <summary><strong>CompanySaveRequest.ts</strong></summary>
+
+**Directory:** `src/modules/companies/http/requests/CompanySaveRequest.ts`
 
 ```ts
 export type CompanySaveInput = {
@@ -244,6 +264,8 @@ export class CompanySaveRequest {
 <details>
 <summary><strong>CompanyResponse.ts</strong></summary>
 
+**Directory:** `src/modules/companies/http/responses/CompanyResponse.ts`
+
 ```ts
 type CompanyDto = {
   id: string;
@@ -269,65 +291,15 @@ export class CompanyResponse {
 </details>
 
 <details>
-<summary><strong>CompanyRepository.ts</strong></summary>
+<summary><strong>CompanyStatus.ts</strong></summary>
+
+**Directory:** `src/modules/companies/domain/enums/CompanyStatus.ts`
 
 ```ts
-import { CompanyStatus } from '../../domain/enums/CompanyStatus';
-
-export type CompanyRecord = {
-  id: string;
-  name: string;
-  document: string;
-  type: string;
-  status: CompanyStatus;
-};
-
-export interface CompanyRepository {
-  save(data: Omit<CompanyRecord, 'id'>): Promise<CompanyRecord>;
-}
-```
-
-</details>
-
-<details>
-<summary><strong>InMemoryCompanyRepository.ts</strong></summary>
-
-```ts
-import { randomUUID } from 'node:crypto';
-import { CompanyRecord, CompanyRepository } from './CompanyRepository';
-
-export class InMemoryCompanyRepository implements CompanyRepository {
-  private readonly items: CompanyRecord[] = [];
-
-  async save(data: Omit<CompanyRecord, 'id'>): Promise<CompanyRecord> {
-    const company: CompanyRecord = {
-      id: randomUUID(),
-      ...data,
-    };
-
-    this.items.push(company);
-
-    return company;
-  }
-}
-```
-
-</details>
-
-<details>
-<summary><strong>CompanyValidationBusiness.ts</strong></summary>
-
-```ts
-export class CompanyValidationBusiness {
-  validateForSave(document: string, type: string): void {
-    if (document.trim() === '') {
-      throw new Error('Company document is required.');
-    }
-
-    if (!['generator', 'operator', 'manager', 'manufacturer'].includes(type)) {
-      throw new Error('Invalid company type.');
-    }
-  }
+export enum CompanyStatus {
+  PENDING = 'pending',
+  APPROVED = 'approved',
+  REJECTED = 'rejected',
 }
 ```
 
@@ -335,6 +307,8 @@ export class CompanyValidationBusiness {
 
 <details>
 <summary><strong>CompanySaveService.ts</strong></summary>
+
+**Directory:** `src/modules/companies/domain/services/CompanySaveService.ts`
 
 ```ts
 import { CompanyValidationBusiness } from '../business/CompanyValidationBusiness';
@@ -364,27 +338,19 @@ export class CompanySaveService {
 </details>
 
 <details>
-<summary><strong>CompanySaveController.ts</strong></summary>
+<summary><strong>CompanyValidationBusiness.ts</strong></summary>
+
+**Directory:** `src/modules/companies/domain/business/CompanyValidationBusiness.ts`
 
 ```ts
-import type { Request, Response, NextFunction } from 'express';
-import { CompanySaveService } from '../../domain/services/CompanySaveService';
-import { CompanySaveRequest } from '../requests/CompanySaveRequest';
-import { CompanyResponse } from '../responses/CompanyResponse';
+export class CompanyValidationBusiness {
+  validateForSave(document: string, type: string): void {
+    if (document.trim() === '') {
+      throw new Error('Company document is required.');
+    }
 
-export class CompanySaveController {
-  constructor(
-    private readonly service: CompanySaveService,
-  ) {}
-
-  async handle(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const input = CompanySaveRequest.parse(req.body);
-      const company = await this.service.handle(input);
-
-      res.status(201).json(CompanyResponse.from(company));
-    } catch (error) {
-      next(error);
+    if (!['generator', 'operator', 'manager', 'manufacturer'].includes(type)) {
+      throw new Error('Invalid company type.');
     }
   }
 }
@@ -393,7 +359,59 @@ export class CompanySaveController {
 </details>
 
 <details>
+<summary><strong>CompanyRepository.ts</strong></summary>
+
+**Directory:** `src/modules/companies/infrastructure/repositories/CompanyRepository.ts`
+
+```ts
+import { CompanyStatus } from '../../domain/enums/CompanyStatus';
+
+export type CompanyRecord = {
+  id: string;
+  name: string;
+  document: string;
+  type: string;
+  status: CompanyStatus;
+};
+
+export interface CompanyRepository {
+  save(data: Omit<CompanyRecord, 'id'>): Promise<CompanyRecord>;
+}
+```
+
+</details>
+
+<details>
+<summary><strong>InMemoryCompanyRepository.ts</strong></summary>
+
+**Directory:** `src/modules/companies/infrastructure/repositories/InMemoryCompanyRepository.ts`
+
+```ts
+import { randomUUID } from 'node:crypto';
+import { CompanyRecord, CompanyRepository } from './CompanyRepository';
+
+export class InMemoryCompanyRepository implements CompanyRepository {
+  private readonly items: CompanyRecord[] = [];
+
+  async save(data: Omit<CompanyRecord, 'id'>): Promise<CompanyRecord> {
+    const company: CompanyRecord = {
+      id: randomUUID(),
+      ...data,
+    };
+
+    this.items.push(company);
+
+    return company;
+  }
+}
+```
+
+</details>
+
+<details>
 <summary><strong>CompanyListQuery.ts</strong></summary>
+
+**Directory:** `src/modules/companies/infrastructure/queries/CompanyListQuery.ts`
 
 ```ts
 export type CompanyListFilters = {
