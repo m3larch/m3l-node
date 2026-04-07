@@ -480,6 +480,8 @@ O módulo continua dono da sua persistência canônica; a leitura cruzada aconte
 Exemplo:
 
 ```ts
+// src/modules/companies/infrastructure/queries/DocumentWithCompanyListQuery.ts
+
 export class DocumentWithCompanyListQuery {
   constructor(
     private readonly db: {
